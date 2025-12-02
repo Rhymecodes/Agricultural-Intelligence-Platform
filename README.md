@@ -2,13 +2,11 @@
 
 ## Project Overview
 
-#### What is Digi-Farm?
+### What is Digi-Farm?
 
 Digi-Farm is a website where farmers can go to get helpful information and advice about farming. Instead of farmers having to guess or rely only on what they learned from their parents, they can use Digi-Farm to make smarter decisions about their crops.
 
-
-#### The Problem It Solves
-
+### The Problem It Solves
 
 Many small-scale farmers in Kenya face challenges like:
 
@@ -24,28 +22,27 @@ __Digi-Farm__ fixes these problems by giving farmers access to:
 * Information about common pests and how to treat them
 * Tips and advice from other farmers in their community
 
+### How Digi-Farm Works
 
-#### How Digi-Farm Works
-
-__1. Farmers Create an Account__
+1. Farmers Create an Account
 
 A farmer goes to Digi-Farm and signs up
 They enter their location, phone number, and which crops they grow
 They can now access everything the platform offers
 
-__2. They Check the Weather__
+2. They Check the Weather
 
 The farmer checks the weather forecast for their area
 They see temperature, rainfall predictions, and humidity
 This helps them decide: "Should I water today? Is rain coming?"
 
-__3. They Follow the Crop Calendar__
+3. They Follow the Crop Calendar
 
 The farmer can see what activities they should do this month
 For example: "March is planting season for maize - plant now!"
 The app shows exactly what to do and when to do it
 
-__4. They Learn About Pests__
+4. They Learn About Pests
 
 If a farmer sees an unknown insect on their crop, they can search for it
 Digi-Farm shows them what the pest is called
@@ -53,9 +50,17 @@ It explains the symptoms to look for
 It tells them how to prevent the pest from spreading
 It suggests treatments (chemicals or natural methods)
 
-__5. They Share Tips With Other Farmers__
+5. They Share Tips With Other Farmers
 
-Farmers can post tips they've learned (like "Intercropping beans with maize saves water")
+Farmers can post tips they've learned like "Intercropping beans with maize saves water"
+
 Other farmers can read these tips
+
 Farmers can like tips they find helpful
+
 This creates a community of learning
+
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
