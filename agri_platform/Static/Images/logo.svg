@@ -1,0 +1,24 @@
+<svg viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Green background box for sprout icon -->
+  <rect x="10" y="10" width="50" height="50" rx="8" fill="#16a34a"/>
+  
+  <!-- Sprout icon -->
+  <g transform="translate(35, 35)">
+    <!-- Stem -->
+    <path d="M 0 10 Q -2 5 -2 0 Q -2 -5 0 -10" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+    
+    <!-- Left leaf -->
+    <ellipse cx="-8" cy="-5" rx="4" ry="6" fill="white" transform="rotate(-45 -8 -5)"/>
+    
+    <!-- Right leaf -->
+    <ellipse cx="8" cy="-5" rx="4" ry="6" fill="white" transform="rotate(45 8 -5)"/>
+    
+    <!-- Top sprout -->
+    <ellipse cx="0" cy="-12" rx="3" ry="5" fill="white"/>
+  </g>
+  
+  <!-- Text: DIGIFARM -->
+  <text x="75" y="50" font-family="Arial, sans-serif" font-size="36" font-weight="bold" letter-spacing="2">
+    <tspan fill="#166534">DIGI</tspan><tspan fill="#16a34a">FARM</tspan>
+  </text>
+</svg>

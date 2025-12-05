@@ -33,7 +33,7 @@ def login(request):
         else:
             messages.error(request, 'Wrong username or Password!')
     context = {}
-    return render(request, 'agriapp/login_form.html', context)
+    return render(request, 'auth/login.html')
 
 
 # Logout User
@@ -84,7 +84,7 @@ def registerUser(request):
         return redirect('login')
 
        
-    return render(request, 'agriapp/register_form.html', context)
+    return render(request, 'auth/register.html')
 
 # Dashboard (requires login)
 @login_required(login_url='login')
@@ -98,3 +98,6 @@ def dashboard(request):
         'farmer_profile': farmer_profile
     }
     return render(request, 'dashboard.html', context)
+
+def terms_and_conditions(request):
+    return render(request, 'terms.html')

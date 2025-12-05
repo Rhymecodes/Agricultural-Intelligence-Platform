@@ -1,0 +1,54 @@
+{% extends 'main.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% include 'navbar.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="jumbotron bg-light p-5 rounded">
+            <h1 class="display-4">Welcome to Digi-Farm 🌾</h1>
+            <p class="lead">Your guide to smarter farming decisions</p>
+            
+            {% if user.is_authenticated %}
+                <p>Welcome back, <strong>{{ user.username }}</strong>!</p>
+                <a class="btn btn-primary btn-lg" href="{% url 'dashboard' %}" role="button">Go to Dashboard</a>
+            {% else %}
+                <p>Get access to weather forecasts, crop calendars, pest guides, and tips from other farmers.</p>
+                <div class="mt-4">
+                    <a class="btn btn-primary btn-lg" href="{% url 'register' %}" role="button">Register Now</a>
+                    <a class="btn btn-outline-primary btn-lg" href="{% url 'login' %}" role="button">Login</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">🌤️ Weather</h5>
+                        <p class="card-text">Get real-time weather updates for your area</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">📅 Crop Calendar</h5>
+                        <p class="card-text">Know when to plant, weed, and harvest</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">🐛 Pest Guide</h5>
+                        <p class="card-text">Learn how to identify and treat pests</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
