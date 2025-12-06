@@ -1,0 +1,284 @@
+{% extends 'main.html' %}
+
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<div class="py-5">
+    <!-- Welcome Section -->
+    <div class="mb-5">
+        <h1 class="display-4 text-success mb-3">
+            Good {% now "H" as hour %}{% if hour|add:"0" < 12 %}Morning{% elif hour|add:"0" < 18 %}Afternoon{% else %}Evening{% endif %},
+            <span class="text-success-emphasis">
+                {% if user.is_authenticated %}
+                    {{ user.username }}
+                {% else %}
+                    Farmer
+                {% endif %}
+            </span>
+        </h1>
+        <p class="lead text-success-emphasis">
+            Welcome to <strong>DIGIFARM</strong>
+        </p>
+    </div>
+
+    {% if user.is_authenticated %}
+        <div class="card mb-5 border-0 shadow-lg">
+        <div class="card-body p-4">
+            <!-- Location Selector -->
+            <div class="mb-4 d-flex align-items-center gap-3">
+                <span class="text-success fs-5"></span>
+                <label for="location" class="form-label mb-0 text-success fw-bold">What's Your Location?</label>
+                <select id="location" class="form-select w-auto border-2 border-success" 
+                        style="max-width: 300px; max-height: 200px; overflow-y: auto;" 
+                        onchange="updateWeather(this.value)">
+                    <option value="Mombasa" {% if location == 'Mombasa' %}selected{% endif %}> Mombasa</option>
+    <option value="Kwale" {% if location == 'Kwale' %}selected{% endif %}>Kwale</option>
+    <option value="Kilifi" {% if location == 'Kilifi' %}selected{% endif %}>Kilifi</option>
+    <option value="Tana River" {% if location == 'Tana River' %}selected{% endif %}> Tana River</option>
+    <option value="Lamu" {% if location == 'Lamu' %}selected{% endif %}>Lamu</option>
+    <option value="Taita-Taveta" {% if location == 'Taita-Taveta' %}selected{% endif %}> Taita-Taveta</option>
+    <option value="Garissa" {% if location == 'Garissa' %}selected{% endif %}> Garissa</option>
+    <option value="Wajir" {% if location == 'Wajir' %}selected{% endif %}> Wajir</option>
+    <option value="Mandera" {% if location == 'Mandera' %}selected{% endif %}> Mandera</option>
+    <option value="Marsabit" {% if location == 'Marsabit' %}selected{% endif %}> Marsabit</option>
+    <option value="Isiolo" {% if location == 'Isiolo' %}selected{% endif %}> Isiolo</option>
+    <option value="Meru" {% if location == 'Meru' %}selected{% endif %}> Meru</option>
+    <option value="Tharaka-Nithi" {% if location == 'Tharaka-Nithi' %}selected{% endif %}> Tharaka-Nithi</option>
+    <option value="Embu" {% if location == 'Embu' %}selected{% endif %}> Embu</option>
+    <option value="Kitui" {% if location == 'Kitui' %}selected{% endif %}> Kitui</option>
+    <option value="Machakos" {% if location == 'Machakos' %}selected{% endif %}> Machakos</option>
+    <option value="Makueni" {% if location == 'Makueni' %}selected{% endif %}> Makueni</option>
+    <option value="Nyandarua" {% if location == 'Nyandarua' %}selected{% endif %}> Nyandarua</option>
+    <option value="Nyeri" {% if location == 'Nyeri' %}selected{% endif %}> Nyeri</option>
+    <option value="Kirinyaga" {% if location == 'Kirinyaga' %}selected{% endif %}> Kirinyaga</option>
+    <option value="Murang'a" {% if location == 'Muranga' %}selected{% endif %}> Murang'a</option>
+    <option value="Kiambu" {% if location == 'Kiambu' %}selected{% endif %}> Kiambu</option>
+    <option value="Turkana" {% if location == 'Turkana' %}selected{% endif %}> Turkana</option>
+    <option value="West Pokot" {% if location == 'West Pokot' %}selected{% endif %}> West Pokot</option>
+    <option value="Samburu" {% if location == 'Samburu' %}selected{% endif %}> Samburu</option>
+    <option value="Trans Nzoia" {% if location == 'Trans Nzoia' %}selected{% endif %}> Trans Nzoia</option>
+    <option value="Uasin Gishu" {% if location == 'Uasin Gishu' %}selected{% endif %}> Uasin Gishu</option>
+    <option value="Elgeyo-Marakwet" {% if location == 'Elgeyo-Marakwet' %}selected{% endif %}> Elgeyo-Marakwet</option>
+    <option value="Nandi" {% if location == 'Nandi' %}selected{% endif %}> Nandi</option>
+    <option value="Baringo" {% if location == 'Baringo' %}selected{% endif %}> Baringo</option>
+    <option value="Laikipia" {% if location == 'Laikipia' %}selected{% endif %}> Laikipia</option>
+    <option value="Nakuru" {% if location == 'Nakuru' %}selected{% endif %}> Nakuru</option>
+    <option value="Narok" {% if location == 'Narok' %}selected{% endif %}> Narok</option>
+    <option value="Kajiado" {% if location == 'Kajiado' %}selected{% endif %}> Kajiado</option>
+    <option value="Kericho" {% if location == 'Kericho' %}selected{% endif %}> Kericho</option>
+    <option value="Bomet" {% if location == 'Bomet' %}selected{% endif %}> Bomet</option>
+    <option value="Kakamega" {% if location == 'Kakamega' %}selected{% endif %}> Kakamega</option>
+    <option value="Vihiga" {% if location == 'Vihiga' %}selected{% endif %}> Vihiga</option>
+    <option value="Bungoma" {% if location == 'Bungoma' %}selected{% endif %}> Bungoma</option>
+    <option value="Busia" {% if location == 'Busia' %}selected{% endif %}> Busia</option>
+    <option value="Siaya" {% if location == 'Siaya' %}selected{% endif %}> Siaya</option>
+    <option value="Kisumu" {% if location == 'Kisumu' %}selected{% endif %}> Kisumu</option>
+    <option value="Homa Bay" {% if location == 'Homa Bay' %}selected{% endif %}> Homa Bay</option>
+    <option value="Migori" {% if location == 'Migori' %}selected{% endif %}> Migori</option>
+    <option value="Kisii" {% if location == 'Kisii' %}selected{% endif %}> Kisii</option>
+    <option value="Nyamira" {% if location == 'Nyamira' %}selected{% endif %}> Nyamira</option>
+    <option value="Nairobi " {% if location == 'Nairobi' %}selected{% endif %}> Nairobi </option>
+                </select>
+            </div>
+
+            <hr>
+
+            <!-- Weather Card Inside -->
+            {% if weather %}
+            <h5 class="text-success mb-4" style="font-size: 1.8rem; font-weight: 600;">Weather Forecast for {{ location }}</h5>
+
+                <div class="mb-4 p-4" style="background: #d4f1e4; border-radius: 15px;">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="text-success mb-3" style="font-size: 1.1rem; font-weight: 600;">Current Weather</h6>
+                            
+                            <p class="mb-2" style="font-size: 3.5rem; font-weight: 700; color: #27ae60;">
+                                {{ weather.temperature }}°C
+                            </p>
+                            
+                            <p class="mb-4" style="font-size: 1.3rem; color: #27ae60; font-weight: 500;">
+                                {{ weather.description|title }}
+                            </p>
+                            
+                            <div style="display: flex; gap: 30px; font-size: 1.1rem; color: #27ae60;">
+                                <div>
+                                    <span>💧 Humidity: {{ weather.humidity }}%</span>
+                                </div>
+                                <div>
+                                    <span>💨 Rainfall: {{ weather.rainfall }}mm</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 text-center">
+                            <img src="{% static 'images/cloud.svg' %}" alt="Weather" style="width: 100px; height: 100px;">
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Farming Tip Card Inside -->
+            <div class="alert alert-warning border-3 border-warning mb-0" role="alert">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="fs-2">💡</span>
+                    <div>
+                        <strong>Today's Farming Recommendation:</strong>
+                        <p class="mb-0 mt-2">{{ farming_tip }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+        <!-- Quick Stats Grid -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card border-start border-5 border-success shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title text-success">Active Crops</h6>
+                        <p class="fs-2 text-success fw-bold mb-0">3</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card border-start border-5 border-info shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title text-info">Upcoming Tasks</h6>
+                        <p class="fs-2 text-info fw-bold mb-0">5</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card border-start border-5 border-warning shadow-sm h-100">
+                    <div class="card-body">
+                        <h6 class="card-title text-warning">Alerts</h6>
+                        <p class="fs-2 text-warning fw-bold mb-0">2</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="row g-4">
+            <div class="col-md-3">
+                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-1 mb-3">🌤️</div>
+                        <h5 class="card-title">Weather</h5>
+                        <p class="card-text small text-muted">Check forecast</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-3">
+                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-1 mb-3">📅</div>
+                        <h5 class="card-title">Calendar</h5>
+                        <p class="card-text small text-muted">Planting guide</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-3">
+                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-1 mb-3">🐛</div>
+                        <h5 class="card-title">Pests</h5>
+                        <p class="card-text small text-muted">Pest guide</p>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-3">
+                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-1 mb-3">💡</div>
+                        <h5 class="card-title">Tips</h5>
+                        <p class="card-text small text-muted">Community tips</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Not Logged In View -->
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4">
+                <div class="card border-0 shadow-lg p-5 bg-success-subtle">
+                    <h2 class="text-success mb-3">Welcome to Digi-Farm</h2>
+                    <p class="text-success-emphasis mb-4">
+                        Your intelligent guide to smarter farming decisions. Get access to weather forecasts, crop calendars, pest guides, and tips from other farmers.
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'register' %}" class="btn btn-success btn-lg">Register Now</a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-success btn-lg">Login</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="card text-center shadow-sm p-4 border-0">
+                            <div class="fs-1 mb-2">🌤️</div>
+                            <h6 class="text-success">Real Weather</h6>
+                            <p class="small text-muted">Up-to-date forecasts</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center shadow-sm p-4 border-0">
+                            <div class="fs-1 mb-2">📅</div>
+                            <h6 class="text-success">Crop Calendar</h6>
+                            <p class="small text-muted">Plant at the right time</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center shadow-sm p-4 border-0">
+                            <div class="fs-1 mb-2">🐛</div>
+                            <h6 class="text-success">Pest Guide</h6>
+                            <p class="small text-muted">Identify & treat pests</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card text-center shadow-sm p-4 border-0">
+                            <div class="fs-1 mb-2">💡</div>
+                            <h6 class="text-success">Farm Tips</h6>
+                            <p class="small text-muted">Learn from farmers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+    .card:hover {
+        transform: translateY(-5px);
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .border-start {
+        border-left-width: 5px !important;
+    }
+</style>
+
+<script>
+function updateWeather(location) {
+    // Create URL with location parameter
+    const url = new URL(window.location);
+    url.searchParams.set('location', location);
+    console.log('Navigating to:', url.toString()); // Debug
+    window.location.href = url.toString();
+}
+</script>
+
+{% endblock %}

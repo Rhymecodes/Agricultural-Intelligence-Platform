@@ -1,0 +1,167 @@
+{% extends 'main.html' %}
+
+{% block title %}weather_calendar{% endblock %}
+
+
+{% block content %}
+
+
+<div class="container py-4">
+
+    <!-- WEATHER SECTION -->
+    <section id="weather-section" class="card-section">
+
+        <h2 class="fw-bold mb-3">Weather Forecast</h2>
+        <p class="text-muted mb-4">Check weather conditions for your location to plan planting and harvesting.</p>
+
+        <!-- FORM -->
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Dropdown -->
+            <div class="mb-3">
+                <label class="form-label">Select County</label>
+                <select class="form-select" id="countySelect" name="county">
+                    <option value="" disabled selected>Choose a county...</option>
+                    <option value="Nairobi">Nairobi</option>
+                    <option value="Mombasa">Mombasa</option>
+                    <option value="Kisii">Kisii</option>
+                    <option value="Kiambu">Kiambu</option>
+                    <option value="Nakuru">Nakuru</option>
+                    <option value="other">Other (Enter manually)</option>
+                </select>
+            </div>
+
+            <!-- Manual Input (hidden by default) -->
+            <div class="mb-3" id="manualInput" style="display:none;">
+                <label class="form-label">Enter Custom Location</label>
+                <input type="text" class="form-control" name="custom_location" placeholder="Enter location">
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary w-100">Get Weather</button>
+        </form>
+
+        <!-- Error Message -->
+        {% if error %}
+        <div class="alert alert-danger mt-3">{{ error }}</div>
+        {% endif %}
+
+        {% if weather %}
+        <hr class="my-4">
+
+        <!-- Current Weather -->
+        <h4 class="fw-bold">Today's Weather</h4>
+        <div class="d-flex align-items-center mt-3 flex-wrap">
+            <h1 class="display-4 fw-bold me-4">
+                {{ weather.list.0.main.temp|floatformat:1 }}°C
+            </h1>
+            <div>
+                <p class="mb-1"><strong>Condition:</strong> {{ weather.list.0.weather.0.description|capfirst }}</p>
+                <p class="mb-1"><strong>Humidity:</strong> {{ weather.list.0.main.humidity }}%</p>
+                <p class="mb-0"><strong>Wind:</strong> {{ weather.list.0.wind.speed }} m/s</p>
+            </div>
+        </div>
+
+        <!-- Weekly Forecast -->
+        <hr class="my-4">
+        <h4 class="fw-bold">5-Time-Point Forecast</h4>
+        <div class="weekly-forecast mt-3">
+            {% for item in weather.list|slice:":5" %}
+                <div class="forecast-day">
+                    <strong>{{ item.dt_txt|date:"D" }}</strong>
+                    <div>
+                        {% if item.weather.0.main == "Clear" %}
+                            ☀️
+                        {% elif item.weather.0.main == "Clouds" %}
+                            ⛅
+                        {% elif item.weather.0.main == "Rain" %}
+                            🌧️
+                        {% elif item.weather.0.main == "Snow" %}
+                            ❄️
+                        {% else %}
+                            🌤️
+                        {% endif %}
+                    </div>
+                    <small>{{ item.main.temp|floatformat:1 }}°C</small>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </section>
+        
+        <section id="calendar-section" class="card-section">
+
+        <h2 class="fw-bold mb-3">Agricultural Calendar</h2>
+        <p class="text-muted">Plan your planting, spraying, weeding, and harvesting activities.</p>
+
+        <!-- Calendar -->
+        <div id="calendar"></div>
+
+        <!-- Add Task Modal -->
+        <div class="modal fade" id="taskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <form method="POST" action="{% url 'add_task' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                <h5 class="modal-title">Add Farm Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-control" name="title" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" class="form-control" name="date" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-control" name="description"></textarea>
+                </div>
+                </div>
+                <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save Task</button>
+                </div>
+            </form>
+            </div>
+        </div>
+        </div>
+
+    </section>
+
+    </div>
+
+    <!-- Script for manual input toggle -->
+    <script>
+        document.getElementById("countySelect").addEventListener("change", function () {
+            document.getElementById("manualInput").style.display =
+                this.value === "other" ? "block" : "none";
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: {{ tasks_json|safe }},
+        dateClick: function(info) {
+            // Pre-fill date in modal
+            document.querySelector('#taskModal input[name="date"]').value = info.dateStr;
+            var modal = new bootstrap.Modal(document.getElementById('taskModal'));
+            modal.show();
+        }
+    });
+
+    calendar.render();
+});
+    </script>
+{% endblock %}

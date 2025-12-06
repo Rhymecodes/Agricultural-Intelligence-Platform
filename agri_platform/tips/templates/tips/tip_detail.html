@@ -1,0 +1,94 @@
+{% extends 'main.html' %}
+
+{% block title %}{{ tip.title }}{% endblock %}
+
+{% block content %}
+
+<div class="py-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Tip Card -->
+            <div class="card border-0 shadow-lg mb-4">
+                <!-- Header -->
+                <div class="card-header bg-light border-0 pb-0">
+                    <div class="d-flex align-items-center justify-content-between p-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width: 60px; height: 60px; background: #27ae60; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.5rem;">
+                                {{ tip.author.user.username|first|upper }}
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold">{{ tip.author.user.username }}</h6>
+                                <small class="text-muted">{{ tip.created_at|date:"M d, Y H:i" }}</small>
+                            </div>
+                        </div>
+                        <a href="{% url 'tips_list' %}" class="btn btn-outline-secondary">← Back</a>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                {% if tip.image %}
+                    <img src="{{ tip.image.url }}" class="card-img-top" alt="{{ tip.title }}" style="height: 400px; object-fit: cover;">
+                {% endif %}
+
+                <!-- Content -->
+                <div class="card-body">
+                    <h3 class="text-success mb-3">{{ tip.title }}</h3>
+                    <p class="lead text-muted">{{ tip.explanation }}</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="card-footer bg-light border-top">
+                    <div class="d-flex justify-content-between">
+                        <form method="POST" action="{% url 'like_tip' tip.pk %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if user_liked %}btn-success{% else %}btn-outline-success{% endif %}">
+                                👍 {{ tip.likes }} Likes
+                            </button>
+                        </form>
+                        <span class="text-muted">{{ comments.count }} Comments</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card border-0 shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Comments ({{ comments.count }})</h5>
+                </div>
+
+                <div class="card-body">
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'add_comment' tip.pk %}" class="mb-4">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                {{ comment_form.content }}
+                            </div>
+                            <button type="submit" class="btn btn-success">Post Comment</button>
+                        </form>
+                    {% else %}
+                        <p class="text-muted mb-3">
+                            <a href="{% url 'login' %}">Login</a> to comment on this tip.
+                        </p>
+                    {% endif %}
+
+                    <!-- Existing Comments -->
+                    {% if comments %}
+                        {% for comment in comments %}
+                            <div class="mb-3 p-3 bg-light rounded">
+                                <div class="d-flex gap-2 mb-2">
+                                    <strong>{{ comment.author.user.username }}</strong>
+                                    <small class="text-muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
+                                </div>
+                                <p class="mb-0">{{ comment.content }}</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-4">No comments yet. Be the first!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

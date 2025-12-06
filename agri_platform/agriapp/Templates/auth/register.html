@@ -1,0 +1,62 @@
+{% extends "main.html" %}
+
+{% load static %}
+
+{% block title %}REGISTER{% endblock title %}
+
+{% block content %}
+
+<div>
+    <a class="my=3">
+      <img src="{% static 'images/logo.svg' %}" alt="Digi-Farm Logo" height="40" class="me-2">
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <h2 class="mb-4">Create an Account</h2>
+        
+        <form action="" method="POST">
+           
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="text" class="form-control" id="phone" name="phone" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="e.g., Nairobi, Kisumu" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="password2" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="password2" name="password2" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+        </form>
+        
+        <p class="mt-3 text-center">
+            Already have an account? <a href="{% url 'login' %}">Login here</a>
+        </p>
+    </div>
+</div>
+
+{% endblock content %}

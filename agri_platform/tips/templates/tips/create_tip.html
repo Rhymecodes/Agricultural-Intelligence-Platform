@@ -1,0 +1,53 @@
+{% extends 'main.html' %}
+
+{% block title %}Create Tip{% endblock %}
+
+{% block content %}
+
+<div class="py-5">
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <h2 class="text-success mb-4 fw-bold">Share Your Farming Tip</h2>
+
+            <div class="card border-0 shadow" style="border-radius: 15px;">
+                <div class="card-body p-5">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label for="id_title" class="form-label fw-bold text-success">Tip Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="alert alert-danger small mt-2">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="id_explanation" class="form-label fw-bold text-success">Explanation</label>
+                            {{ form.explanation }}
+                            {% if form.explanation.errors %}
+                                <div class="alert alert-danger small mt-2">{{ form.explanation.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="id_image" class="form-label fw-bold text-success">Image</label>
+                            {{ form.image }}
+                            <small class="text-muted d-block mt-2">Upload a photo to make your tip stand out</small>
+                            {% if form.image.errors %}
+                                <div class="alert alert-danger small mt-2">{{ form.image.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-success btn-lg fw-bold">📤 Post Tip</button>
+                            <a href="{% url 'tips_list' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

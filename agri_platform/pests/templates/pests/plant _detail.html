@@ -1,0 +1,42 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>{{ plant.name }}</h2>
+    {% if plant.image %}
+    <img src="{{ plant.image.url }}" class="img-fluid mb-3" alt="{{ plant.name }}">
+    {% endif %}
+    <p>{{ plant.description }}</p>
+
+    <hr>
+    <h4>Pests affecting {{ plant.name }}</h4>
+    {% if pests %}
+        <ul>
+        {% for pest in pests %}
+            <li>
+                <strong>{{ pest.name }}</strong> - {{ pest.symptoms|truncatewords:20 }}
+                <br><em>Treatment:</em> {{ pest.treatment|truncatewords:20 }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No pests recorded for this plant.</p>
+    {% endif %}
+
+    <hr>
+    <h4>Diseases affecting {{ plant.name }}</h4>
+    {% if diseases %}
+        <ul>
+        {% for disease in diseases %}
+            <li>
+                <strong>{{ disease.name }}</strong> - {{ disease.symptoms|truncatewords:20 }}
+                <br><em>Treatment:</em> {{ disease.treatment|truncatewords:20 }}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No diseases recorded for this plant.</p>
+    {% endif %}
+
+    <a href="{% url 'plant_list' %}" class="btn btn-secondary mt-3">Back to Plants</a>
+</div>
+{% endblock %}

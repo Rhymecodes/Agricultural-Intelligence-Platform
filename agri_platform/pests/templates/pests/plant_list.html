@@ -1,0 +1,56 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Pests & Diseases Guide</h2>
+    <p class="text-muted mb-4">Identify and manage common agricultural pests and diseases</p>
+
+    <!-- Search Bar -->
+    <div class="mb-4">
+        <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Search plants or pests...">
+    </div>
+
+    <!-- Plant Grid -->
+    <div class="row g-4" id="plantGrid">
+        {% for plant in plants %}
+        <div class="col-12 col-md-6 col-lg-4 plant-card">
+            <a href="{% url 'plant_detail' plant.id %}" class="text-decoration-none">
+                <div class="card text-white" style="background-color: #1abc9c;">
+                    <div class="card-body d-flex align-items-center">
+                        {% if plant.image %}
+                        <img src="{{ plant.image.url }}" alt="{{ plant.name }}" style="width:50px; height:50px; margin-right:15px;">
+                        {% else %}
+                        <div style="width:50px; height:50px; margin-right:15px;"></div>
+                        {% endif %}
+                        <div>
+                            <h5 class="card-title mb-0">{{ plant.name }}</h5>
+                            <small>{{ plant.pests.count }} known threats</small>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- JavaScript for filtering -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const plantCards = document.querySelectorAll('.plant-card');
+
+    searchInput.addEventListener('keyup', function() {
+        const query = searchInput.value.toLowerCase();
+
+        plantCards.forEach(card => {
+            const plantName = card.querySelector('.card-title').textContent.toLowerCase();
+            if (plantName.includes(query)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

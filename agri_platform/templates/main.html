@@ -1,0 +1,89 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
+    <!-- Calendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+
+    <!-- Calendar JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+    <style>
+        body {
+            background-color: #dcfce7;
+            scroll-behavior: smooth;
+        }
+
+        .button{
+            color: #0e8038
+        }
+
+         .card-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .weekly-forecast {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .forecast-day {
+            background: #eef3f7;
+            border-radius: 10px;
+            padding: 15px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        :root {
+            --custom-green: #27ae60;
+        }
+        
+        .btn-custom-green {
+            background-color: var(--custom-green);
+            border-color: var(--custom-green);
+            color: white;
+        }
+        
+        .btn-custom-green:hover {
+            background-color: #1e8449;
+            border-color: #1e8449;
+            color: white;
+        }
+        
+        .bg-custom-green {
+            background-color: var(--custom-green);
+        }
+    </style>
+
+</head>
+
+<body>
+   {% include 'navbar.html' %}
+
+
+    <div class="container py-5">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+
+</html>
