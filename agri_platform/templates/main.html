@@ -71,6 +71,78 @@
         .bg-custom-green {
             background-color: var(--custom-green);
         }
+
+        .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+    }
+
+    .calendar-day {
+        background: white;
+        border: 2px solid #d4f1e4;
+        border-radius: 10px;
+        padding: 12px;
+        min-height: 120px;
+        position: relative;
+    }
+
+    .calendar-day.other-month {
+        background: #f9f9f9;
+        border-color: #e0e0e0;
+        color: #ccc;
+    }
+
+    .calendar-day.today {
+        background: #e8f5e9;
+    }
+
+    .calendar-day-number {
+        font-weight: bold;
+        color: #27ae60;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .today-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background: #27ae60;
+        color: white;
+        border-radius: 50%;
+        font-size: 0.8rem;
+    }
+
+    .calendar-tasks {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 0.75rem;
+    }
+
+    .calendar-task {
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+
+    .task-planting { background: #27ae60; }
+    .task-weeding { background: #f39c12; }
+    .task-watering { background: #3498db; }
+    .task-harvesting { background: #f1c40f; color: #333; }
+    .task-fertilizing { background: #9b59b6; }
+    .task-pest-control { background: #e74c3c; }
+    .task-other { background: #95a5a6; }
     </style>
 
 </head>
@@ -84,6 +156,7 @@
         {% endblock %}
     </div>
 
+    
 </body>
 
 </html>

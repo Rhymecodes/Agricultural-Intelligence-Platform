@@ -26,6 +26,7 @@ urlpatterns = [
     path('planner/', include('weather_calendar.urls')),
     path('plants/', include('pests.urls')),
     path('tips/', include('tips.urls')),
+    path('consultations/', include('consultations.urls')),
 ]
 
 

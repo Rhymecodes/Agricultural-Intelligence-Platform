@@ -1,0 +1,116 @@
+{% extends 'main.html' %}
+
+{% block title %}Q&A Forum & Consultations{% endblock %}
+
+{% block content %}
+
+<div class="py-5" style="background: #f0f8f5;">
+    <div class="mx-auto" style="max-width: 1200px; padding: 0 20px;">
+        
+        <h2 class="text-success fw-bold mb-2" style="font-size: 2.5rem;">💡 Q&A Forum & Expert Consultations</h2>
+        <p class="text-success mb-5" style="font-size: 1.1rem;">Ask farming questions and book expert consultations</p>
+
+        <div class="row g-4 mb-5">
+            <!-- Ask Question -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow" style="border-radius: 20px;">
+                    <div class="card-body p-5">
+                        <h4 class="text-success fw-bold mb-3">📝 Ask a Question</h4>
+                        <p class="text-muted mb-4">Get help from agricultural experts in our community</p>
+                        <a href="{% url 'ask_question' %}" class="btn btn-success btn-lg w-100">
+                            Ask Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Book Consultation -->
+            <div class="col-lg-6">
+                <div class="card border-0 shadow" style="border-radius: 20px;">
+                    <div class="card-body p-5">
+                        <h4 class="text-success fw-bold mb-3">🎯 Book Consultation</h4>
+                        <p class="text-muted mb-4">Get personalized advice from verified agricultural experts</p>
+                        <a href="{% url 'book_consultation_no_expert' %}" class="btn btn-success btn-lg w-100">
+                            Book Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="forumTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active text-success fw-bold" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions" type="button" role="tab">
+                    📋 Latest Questions
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-success fw-bold" id="experts-tab" data-bs-toggle="tab" data-bs-target="#experts" type="button" role="tab">
+                    👨‍🌾 Verified Experts
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-success fw-bold" id="my-consultations-tab" data-bs-toggle="tab" data-bs-target="#my-consultations" type="button" role="tab">
+                    📅 My Consultations
+                </button>
+            </li>
+        </ul>
+
+        <!-- Questions Tab -->
+        <div class="tab-content" id="forumTabContent">
+            <div class="tab-pane fade show active" id="questions" role="tabpanel">
+                <div class="row g-4">
+                    {% for question in questions %}
+                        <div class="col-lg-6">
+                            <a href="{% url 'question_detail' question.pk %}" class="text-decoration-none">
+                                <div class="card border-0 shadow-sm h-100" style="border-radius: 15px; transition: all 0.3s;" onmouseover="this.style.boxShadow='0 10px 30px rgba(0,0,0,0.15)'" onmouseout="this.style.boxShadow='0 2px 10px rgba(0,0,0,0.1)'">
+                                    <div class="card-body">
+                                        <h5 class="text-success fw-bold">{{ question.title }}</h5>
+                                        <p class="text-muted small mb-2">{{ question.content|truncatewords:20 }}</p>
+                                        <div class="d-flex justify-content-between">
+                                            <small class="text-muted">
+                                                👤 {{ question.author.user.username }}
+                                            </small>
+                                            <small class="text-muted">
+                                                💬 {{ question.answers.count }} answers
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <p class="text-center text-muted py-5">No questions yet. Be the first to ask!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Experts Tab -->
+            <div class="tab-pane fade" id="experts" role="tabpanel">
+                <div class="row g-4">
+                    {% for expert in experts %}
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                                <div class="card-body">
+                                    <div class="text-center mb-3">
+                                        <div style="width: 80px; height: 80px; background: #27ae60; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; margin: 0 auto;">
+                                            {{ expert.user.username|first|upper }}
+                                        </div>
+                                    </div>
+                                    <h5 class="text-success fw-bold text-center">{{ expert.user.get_full_name }}</h5>
+                                    <p class="text-muted text-center small">{{ expert.expertise }}</p>
+                                    <p class="text-center mb-3">
+                                        <span class="badge bg-success">{{ expert.years_experience }} years experience</span>
+                                    </p>
+                                    <p class="text-center mb-3">
+                                        <strong class="text-success">KES {{ expert.hourly_rate }}/hour</strong>
+                                    </p>
+                                    <a href="{% url 'book_consultation' expert.pk %}" class="btn btn-success w-100">
+                                        Book Consultation
+                                    </a>
+                                </div>
+                            </div>
+                        </div>

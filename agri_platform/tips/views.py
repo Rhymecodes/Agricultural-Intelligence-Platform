@@ -30,7 +30,7 @@ def create_tip(request):
         farmer_profile = FarmerProfile.objects.get(user=request.user)
     except FarmerProfile.DoesNotExist:
         messages.error(request, 'Please complete your profile first.')
-        return redirect('dashboard')
+        return redirect('tips_list')
     
     if request.method == 'POST':
         form = TipForm(request.POST, request.FILES)

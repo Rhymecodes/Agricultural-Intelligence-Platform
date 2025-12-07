@@ -1,0 +1,188 @@
+{% extends 'main.html' %}
+
+{% block title %}AI Pest Diagnosis{% endblock %}
+
+{% block content %}
+
+<div class="py-5" style="background: #f0f8f5;">
+    <div class="mx-auto" style="max-width: 800px; padding: 0 20px;">
+        
+        <h2 class="text-success fw-bold mb-2" style="font-size: 2.5rem;">🐛 AI Pest Diagnosis</h2>
+        <p class="text-success mb-5" style="font-size: 1.1rem;">Upload a photo of your crop to identify pests and diseases instantly</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if diagnosis_done %}
+            <!-- Diagnosis Results -->
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    
+                    <!-- Disease Name -->
+                    <div class="mb-4">
+                        <h3 class="text-success fw-bold mb-2">{{ pest_name }}</h3>
+                        <div class="progress" style="height: 30px; border-radius: 15px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ confidence }}%; font-size: 1rem; font-weight: bold;">
+                                {{ confidence }}% Confidence
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Symptoms -->
+                    <div class="mb-4">
+                        <h5 class="text-success fw-bold mb-2">📋 Symptoms</h5>
+                        <p class="text-muted">{{ symptoms }}</p>
+                    </div>
+
+                    <!-- Treatment -->
+                    <div class="mb-4">
+                        <h5 class="text-success fw-bold mb-2">💊 Treatment</h5>
+                        <div class="alert alert-warning" role="alert">
+                            {{ treatment }}
+                        </div>
+                    </div>
+
+                    <!-- Prevention -->
+                    <div class="mb-4">
+                        <h5 class="text-success fw-bold mb-2">🛡️ Prevention</h5>
+                        <p class="text-muted">{{ prevention }}</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'pest_diagnosis' %}" class="btn btn-success btn-lg fw-bold">
+                            🔄 Diagnose Another
+                        </a>
+                        <a href="{% url 'tips_list' %}" class="btn btn-outline-success btn-lg fw-bold">
+                            💡 View Tips
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- Upload Form -->
+            <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="card-body p-5">
+                    
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Upload Area -->
+                        <div class="mb-5">
+                            <label for="image" class="form-label fw-bold text-success mb-3">Upload Crop Photo</label>
+                            <div class="border-3 border-dashed p-5 text-center" 
+                                 style="border-color: #27ae60; border-radius: 15px; cursor: pointer;" 
+                                 id="dropZone">
+                                <div class="fs-1 mb-3">📸</div>
+                                <p class="mb-2">
+                                    <strong>Click to upload</strong> or drag and drop
+                                </p>
+                                <p class="text-muted small">PNG, JPG, GIF up to 5MB</p>
+                                <input type="file" name="image" id="image" accept="image/*" 
+                                       class="form-control" required style="display: none;">
+                            </div>
+                        </div>
+
+                        <!-- Preview -->
+                        <div id="preview" style="display: none; margin-bottom: 20px;">
+                            <img id="previewImg" src="" alt="Preview" style="max-width: 100%; border-radius: 15px;">
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-success btn-lg w-100 fw-bold">
+                            🔍 Analyze Image
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="row g-4 mt-5">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="card-body text-center">
+                            <div class="fs-1 mb-2">🤖</div>
+                            <h5 class="text-success fw-bold">AI Powered</h5>
+                            <p class="small text-muted">Uses machine learning to identify pests</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="card-body text-center">
+                            <div class="fs-1 mb-2">⚡</div>
+                            <h5 class="text-success fw-bold">Instant Results</h5>
+                            <p class="small text-muted">Get diagnosis in seconds</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="card-body text-center">
+                            <div class="fs-1 mb-2">💯</div>
+                            <h5 class="text-success fw-bold">Treatment Guide</h5>
+                            <p class="small text-muted">Get recommended solutions</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% endif %}
+    </div>
+</div>
+
+<script>
+const dropZone = document.getElementById('dropZone');
+const imageInput = document.getElementById('image');
+const preview = document.getElementById('preview');
+const previewImg = document.getElementById('previewImg');
+
+dropZone.addEventListener('click', () => imageInput.click());
+
+dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.style.backgroundColor = '#e8f5e9';
+});
+
+dropZone.addEventListener('dragleave', () => {
+    dropZone.style.backgroundColor = 'transparent';
+});
+
+dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.style.backgroundColor = 'transparent';
+    
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        imageInput.files = files;
+        showPreview(files[0]);
+    }
+});
+
+imageInput.addEventListener('change', (e) => {
+    if (e.target.files.length > 0) {
+        showPreview(e.target.files[0]);
+    }
+});
+
+function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
+{% endblock %}

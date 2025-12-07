@@ -1,4 +1,4 @@
-{% extends 'main.html' %}
+{% extends 'auth_base.html' %}
 
 {% load static %}
 
@@ -28,7 +28,7 @@
             <input type="checkbox" class="form-check-input" id="exampleCheck1" required>
             <label class="form-check-label" for="exampleCheck1">I agree to the <a href="{% url 'terms and conditions' %}">terms and conditions</a> of agriapp</label>
         </div>
-        <button type="submit" class="btn btn-primary">LOGIN</button>
+        <button type="submit" class="btn btn-primary" style = 'background: #16a34a'>LOGIN</button>
     </form>
 </div>
 

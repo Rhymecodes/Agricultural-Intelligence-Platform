@@ -1,0 +1,67 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-5" >
+    <!-- Plant Info -->
+    <h2>{{ plant.name }}</h2>
+    {% if plant.image %}
+        <img src="{{ plant.image.url }}" class="img-fluid mb-3 rounded" alt="{{ plant.name }}" style="max-width:300px;">
+    {% endif %}
+    <p>{{ plant.description }}</p>
+
+    <hr>
+
+    <!-- Pests -->
+    <h4>Pests affecting {{ plant.name }}</h4>
+    {% if pests %}
+        <div class="row" >
+        {% for pest in pests %}
+            <div class="col-12 mb-3">
+                <div class="card p-2 d-flex flex-column flex-md-row align-items-start" style = "background: rgba(196, 242, 219, 1)">
+                    {% if pest.image %}
+                        <img src="{{ pest.image.url }}" alt="{{ pest.name }}" 
+                             style="width:120px; height:120px; object-fit:cover; margin-bottom:10px; margin-right:15px;"
+                             class="rounded">
+                    {% endif %}
+                    <div>
+                        <h5>{{ pest.name }}</h5>
+                        <p>{{ pest.symptoms|truncatewords:30 }}</p>
+                        <p><em>Treatment:</em> {{ pest.treatment|truncatewords:30 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p>No pests recorded for this plant.</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Diseases -->
+    <h4>Diseases affecting {{ plant.name }}</h4>
+    {% if diseases %}
+        <div class="row">
+        {% for disease in diseases %}
+            <div class="col-12 mb-3">
+                <div class="card p-2 d-flex flex-column flex-md-row align-items-start" style = "background: rgba(196, 242, 219, 1)">
+                    {% if disease.image %}
+                        <img src="{{ disease.image.url }}" alt="{{ disease.name }}" 
+                             style="width:120px; height:120px; object-fit:cover; margin-bottom:10px; margin-right:15px;"
+                             class="rounded">
+                    {% endif %}
+                    <div>
+                        <h5>{{ disease.name }}</h5>
+                        <p>{{ disease.symptoms|truncatewords:30 }}</p>
+                        <p><em>Treatment:</em> {{ disease.treatment|truncatewords:30 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p>No diseases recorded for this plant.</p>
+    {% endif %}
+
+    <a href="{% url 'plant_list' %}" class="btn btn-secondary mt-3" style = 'background: #16a34a'>Back to Plants</a>
+</div>
+{% endblock %}

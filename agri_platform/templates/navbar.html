@@ -19,27 +19,33 @@
         
         {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="#weather-section">
+            <a class="nav-link" href="{% url "weather_calendar" %}">
               <img src="{% static 'images/cloud.svg' %}" alt="Weather" height="20" class="me-1">
               Weather
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#calendar-section">
+            <a class="nav-link" href="{% url "weather_calendar" %}">
               <img src="{% static 'images/Calendar.svg' %}" alt="Calendar" height="15" class="me-1">
               Calendar
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{% url "plant_list" %}">
               <img src="{% static 'images/tick.svg' %}" alt="Pests" height="25" class="me-1">
               Pests
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">
+            <a class="nav-link" href="{% url "tips_list" %}">
               <img src="{% static 'images/idea.svg' %}" alt="Tips" height="20" class="me-1">
               Tips
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url "qa_forum" %}">
+              <img src="{% static 'images/idea.svg' %}" alt="Tips" height="20" class="me-1">
+              Consultations
             </a>
           </li>
         {% endif %}
@@ -53,7 +59,9 @@
 
       <!-- Logout Button (right side) -->
       {% if user.is_authenticated %}
+      <div class = "ms-4">
         <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+      </div>
       {% else %}
         <div class="ms-2">
           <a href="{% url 'login' %}" class="btn btn-primary me-2">Login</a>

@@ -1,0 +1,202 @@
+{% extends 'main.html' %}
+
+{% block title %}Processing Payment - {{ consultation.topic }}{% endblock %}
+
+{% block content %}
+
+<div class="py-5" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); min-height: 100vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-lg" style="border-radius: 20px;">
+                    <div class="card-body p-5 text-center">
+                        
+                        <!-- Loading Animation -->
+                        <div class="mb-4">
+                            <div class="spinner-border text-success" role="status" style="width: 4rem; height: 4rem;">
+                                <span class="visually-hidden">Processing...</span>
+                            </div>
+                        </div>
+
+                        <!-- Main Message -->
+                        <h2 class="text-success fw-bold mb-3">Payment Initiated! 📱</h2>
+                        <p class="text-muted fs-5 mb-4">
+                            An M-Pesa prompt has been sent to your phone
+                        </p>
+
+                        <!-- Instructions -->
+                        <div class="alert alert-info mb-4" style="border-radius: 15px;">
+                            <h5 class="alert-heading fw-bold">📝 What to do next:</h5>
+                            <ol class="text-start mb-0">
+                                <li>Check your phone for the M-Pesa STK popup</li>
+                                <li>Enter your M-Pesa PIN</li>
+                                <li>Wait for confirmation</li>
+                                <li>You'll be redirected automatically once payment is confirmed</li>
+                            </ol>
+                        </div>
+
+                        <!-- Consultation Details -->
+                        <div class="card border-0 bg-light mb-4" style="border-radius: 15px;">
+                            <div class="card-body">
+                                <h6 class="text-muted fw-bold">Consultation Details</h6>
+                                <div class="row mt-3">
+                                    <div class="col-6 text-start">
+                                        <small class="text-muted">Expert</small>
+                                        <p class="fw-bold">{{ consultation.expert.user.get_full_name }}</p>
+                                    </div>
+                                    <div class="col-6 text-start">
+                                        <small class="text-muted">Amount</small>
+                                        <p class="fw-bold text-success">KES {{ consultation.amount }}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6 text-start">
+                                        <small class="text-muted">Duration</small>
+                                        <p class="fw-bold">{{ consultation.duration_hours }} hour(s)</p>
+                                    </div>
+                                    <div class="col-6 text-start">
+                                        <small class="text-muted">Type</small>
+                                        <p class="fw-bold">{{ consultation.get_consultation_type_display }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Section -->
+                        <div id="paymentStatus" class="mb-4">
+                            <small class="text-muted">
+                                Payment Status: <span id="statusText" class="fw-bold">Waiting for M-Pesa confirmation...</span>
+                            </small>
+                        </div>
+
+                        <!-- Check Status Button -->
+                        <button 
+                            type="button" 
+                            id="checkStatusBtn" 
+                            class="btn btn-outline-success btn-lg mb-3 w-100"
+                            onclick="checkPaymentStatus()"
+                        >
+                            🔄 Check Status Manually
+                        </button>
+
+                        <!-- Didn't Receive? -->
+                        <div class="text-muted small">
+                            <p>Didn't receive the prompt?</p>
+                            <a href="{% url 'initiate_payment' consultation.id %}" class="btn btn-sm btn-link text-success">
+                                Try Again
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Help Text -->
+                <div class="mt-4 text-center text-white">
+                    <small>
+                        Having issues? Contact support or return to
+                        <a href="{% url 'my_consultations' %}" class="text-white fw-bold">My Consultations</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-check payment status every 5 seconds
+    let checkAttempts = 0;
+    const maxAttempts = 24; // Check for 2 minutes (24 * 5 seconds)
+
+    function checkPaymentStatus() {
+        const consultationId = {{ consultation.id }};
+        const statusText = document.getElementById('statusText');
+        const checkBtn = document.getElementById('checkStatusBtn');
+
+        // Disable button during check
+        checkBtn.disabled = true;
+        statusText.textContent = 'Checking...';
+
+        fetch(`{% url 'check_payment_status' consultation.id %}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.payment_status === 'completed') {
+                    // Payment successful!
+                    statusText.innerHTML = '✅ Payment Successful!';
+                    statusText.classList.add('text-success');
+                    
+                    // Show success message
+                    setTimeout(() => {
+                        window.location.href = `{% url 'consultation_detail' consultation.id %}`;
+                    }, 2000);
+                } 
+                else if (data.payment_status === 'failed') {
+                    // Payment failed
+                    statusText.innerHTML = '❌ Payment Failed';
+                    statusText.classList.add('text-danger');
+                    checkBtn.disabled = false;
+                    checkBtn.textContent = '🔄 Try Again';
+                } 
+                else {
+                    // Still pending
+                    statusText.textContent = 'Still waiting for M-Pesa confirmation...';
+                    checkBtn.disabled = false;
+                    checkBtn.textContent = '🔄 Check Status';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                statusText.textContent = 'Error checking status. Try again.';
+                checkBtn.disabled = false;
+                statusText.classList.add('text-danger');
+            });
+    }
+
+    // Auto-check payment status every 5 seconds
+    function autoCheckPaymentStatus() {
+        if (checkAttempts >= maxAttempts) {
+            document.getElementById('statusText').textContent = 
+                'Still waiting... Check your M-Pesa app or contact support';
+            return;
+        }
+
+        checkAttempts++;
+        
+        const consultationId = {{ consultation.id }};
+        fetch(`{% url 'check_payment_status' consultation.id %}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.payment_status === 'completed') {
+                    document.getElementById('statusText').innerHTML = '✅ Payment Successful! Redirecting...';
+                    document.getElementById('statusText').classList.add('text-success');
+                    
+                    setTimeout(() => {
+                        window.location.href = `{% url 'consultation_detail' consultation.id %}`;
+                    }, 2000);
+                } 
+                else if (data.payment_status === 'failed') {
+                    clearInterval(autoCheckInterval);
+                    document.getElementById('statusText').innerHTML = '❌ Payment Failed';
+                    document.getElementById('statusText').classList.add('text-danger');
+                    document.getElementById('checkStatusBtn').disabled = false;
+                    document.getElementById('checkStatusBtn').textContent = '🔄 Try Again';
+                }
+                else {
+                    // Still pending, continue checking
+                    setTimeout(autoCheckPaymentStatus, 5000);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking status:', error);
+                // Try again after delay
+                setTimeout(autoCheckPaymentStatus, 5000);
+            });
+    }
+
+    // Start auto-checking when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Starting payment status checks...');
+        autoCheckPaymentStatus();
+    });
+</script>
+
+{% endblock %}
