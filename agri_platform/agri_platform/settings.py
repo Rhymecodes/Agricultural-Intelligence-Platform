@@ -185,6 +185,9 @@ MPESA_INITIATOR_USERNAME = 'initiator_username'
 
 MPESA_INITIATOR_SECURITY_CREDENTIAL = 'initiator_security_credential'
 
+MPESA_CALLBACK_URL = "https://your-ngrok-url.ngrok-free.app/consultations/callback/"
+
+
 #LOGGING 
 LOGGING = {
     'version': 1,

@@ -1,0 +1,51 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-5" style="max-width:600px;">
+
+    <h3>Book Consultation</h3>
+
+    {% if not booking %}
+        <!-- STEP 1: Booking Form -->
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="hidden" name="create_booking" value="1">
+
+            <label>Consultation Type</label>
+            <select name="consultation_type" class="form-control mb-3" required>
+                <option value="online">Online – KES 500</option>
+                <option value="office">Office Visit – KES 1500</option>
+                <option value="farm">Farm Visit – KES 3000</option>
+            </select>
+
+            <label>Phone Number</label>
+            <input type="text" name="phone" class="form-control mb-3" placeholder="2547XXXXXXXX" required>
+
+            <label>Preferred Date</label>
+            <input type="date" name="date" class="form-control mb-3" required>
+
+            <button class="btn btn-success w-100">Continue</button>
+        </form>
+
+    {% else %}
+        <!-- STEP 2: Payment Section -->
+        <h4 class="mt-4 text-center">Payment for {{ booking.consultation_type }} (KES {{ booking.amount }})</h4>
+
+        <form method="POST" class="mt-3">
+            {% csrf_token %}
+            <input type="hidden" name="pay_now" value="1">
+            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+
+            <p class="text-center">Click the button to receive STK push on {{ booking.phone_number }}</p>
+
+            <button type="submit" class="btn btn-success w-100">Pay with M-Pesa</button>
+        </form>
+        <!-- Redirect Button-->
+        <a href="{% url 'consultations' %}" class="btn btn-success w-100 mt-3">
+            Go to Consultations
+        </a>
+
+    {% endif %}
+
+</div>
+{% endblock %}
