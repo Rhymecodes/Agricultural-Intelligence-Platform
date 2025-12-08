@@ -541,19 +541,19 @@ A comprehensive platform for expert consultations and community Q&A with M-Pesa 
 
 #### Backend
 
-**Framework**: Django 5.2.9
-**Database**: SQLite (development), PostgreSQL (production recommended)
-**Payment**: M-Pesa Daraja API (django_daraja)
-**Weather API**: OpenWeatherMap
-**Authentication**: Django built-in
+- **Framework**: Django 5.2.9
+- **Database**: SQLite (development), PostgreSQL (production recommended)
+- **Payment**: M-Pesa Daraja API (django_daraja)
+- **Weather API**: OpenWeatherMap
+- **Authentication**: Django built-in
 
 
 #### Frontend
 
-**Template Engine**: Django Templates
-**CSS Framework**: Bootstrap 5
-**Icons**: Google Material Icons
-**JavaScript**: Vanilla JS (for AJAX)
+- **Template Engine**: Django Templates
+- **CSS Framework**: Bootstrap 5
+- **Icons**: Google Material Icons
+- **JavaScript**: Vanilla JS (for AJAX)
 
 #### AI/ML
 - TensorFlow
