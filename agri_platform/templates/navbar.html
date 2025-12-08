@@ -18,16 +18,11 @@
         </li>
         
         {% if user.is_authenticated %}
+          
           <li class="nav-item">
-            <a class="nav-link" href="{% url "weather_calendar" %}">
-              <img src="{% static 'images/cloud.svg' %}" alt="Weather" height="20" class="me-1">
-              Weather
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url "weather_calendar" %}">
+            <a class="nav-link" href="{% url "calendar_view" %}">
               <img src="{% static 'images/Calendar.svg' %}" alt="Calendar" height="15" class="me-1">
-              Calendar
+              Planner
             </a>
           </li>
           <li class="nav-item">

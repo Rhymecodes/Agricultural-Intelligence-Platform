@@ -1,0 +1,32 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-5" style="max-width:600px;">
+    <h3>Add Farm Task</h3>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label>Task Name</label>
+            <input type="text" name="task_name" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Task Date</label>
+            <input type="date" name="task_date" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Task Type</label>
+            <select name="task_type" class="form-control">
+                <option value="planting">Planting</option>
+                <option value="watering">Watering</option>
+                <option value="fertilizing">Fertilizing</option>
+                <option value="harvesting">Harvesting</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Task</button>
+    </form>
+</div>
+{% endblock %}

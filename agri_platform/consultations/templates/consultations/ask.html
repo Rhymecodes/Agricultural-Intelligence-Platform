@@ -1,0 +1,12 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="container mt-5" style="max-width:600px;">
+    <h3>Ask an Expert</h3>
+
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="question" class="form-control mb-3" rows="4" placeholder="Ask your question..." required></textarea>
+        <button class="btn btn-success w-100">Submit Question</button>
+    </form>
+</div>
+{% endblock %}

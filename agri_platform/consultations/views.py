@@ -1,336 +1,235 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from .models import Question, ConsultationBooking, Consultation,PaymentTransaction, Expert
+from datetime import date
+import requests
+from requests.auth import HTTPBasicAuth
+import base64
+import datetime
 from django.contrib import messages
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST, require_http_methods
-from django.views.decorators.csrf import csrf_exempt
-from agriapp.models import FarmerProfile, Crop
-from .models import Question, Answer, Expert, Consultation, PaymentTransaction
-from .forms import QuestionForm, AnswerForm, ConsultationForm
-from .mpesa_service import DarajaMpesaService
-from django.urls import reverse
 import json
-import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+from django.core.mail import send_mail
+import time
+from django.utils import timezone
+from agriapp.models import FarmerProfile
 
-logger = logging.getLogger(__name__)
+@login_required
+def consultations_home(request):
+    questions = Question.objects.all().order_by('-created_at')
+    return render(request, 'consultations/consultations.html', {'questions': questions})
 
 
-# Q&A Forum Views
+@login_required
+def ask_question(request):
+    if request.method == 'POST':
+        question_text = request.POST.get('question')
+        if question_text:
+            # Save the question
+            Question.objects.create(
+                user=request.user,
+                question=question_text
+            )
+            messages.success(request, "Your question has been submitted!")
+            return redirect('qa_forum')  # redirect to the forum page
+        else:
+            messages.error(request, "Please enter a question.")
+    
+    return render(request, 'consultations/ask.html')
+
 @login_required(login_url='login')
 def qa_forum(request):
-    """Main Q&A Forum page"""
     try:
         farmer_profile = FarmerProfile.objects.get(user=request.user)
     except FarmerProfile.DoesNotExist:
         messages.error(request, 'Please complete your profile first.')
         return redirect('home')
     
-    questions = Question.objects.all()
+    questions = Question.objects.all()  # ← This line gets all questions
     experts = Expert.objects.filter(is_verified=True)
     
-    context = {
-        'questions': questions,
+    return render(request, 'consultations/qa_forum.html', {
+        'questions': questions,  # ← Pass questions to template
         'experts': experts,
         'farmer_profile': farmer_profile,
-    }
-    
-    return render(request, 'consultations/qa_forum.html', context)
+    })
+
+@login_required
+def book_consultation(request):
+    booking = None   # to show mpesa section only after booking
+
+    # Booking submission
+    if request.method == 'POST' and "create_booking" in request.POST:
+        c_type = request.POST.get('consultation_type')
+        phone = request.POST.get('phone')
+        preferred_date = request.POST.get('date')
+
+        # Pricing
+        prices = {
+            'online': 500,
+            'office': 1500,
+            'farm': 3000,
+        }
+        amount = prices.get(c_type, 0)
+
+        booking = ConsultationBooking.objects.create(
+            user=request.user,
+            consultation_type=c_type,
+            phone_number=phone,
+            preferred_date=preferred_date,
+            amount=amount
+        )
+
+        messages.success(request, "Booking created. Proceed with payment.")
+
+    # Payment submission
+    if request.method == 'POST' and "pay_now" in request.POST:
+        booking_id = request.POST.get("booking_id")
+        booking = ConsultationBooking.objects.get(id=booking_id)
+        phone = booking.phone_number
+        amount = booking.amount
+
+        # Create transaction
+        transaction = PaymentTransaction.objects.create(
+            consultation=booking,
+            phone_number=phone,
+            amount=amount,
+            status='pending'
+        )
+
+        # Send STK
+        response = lipa_na_mpesa(phone, amount)
+
+        if "CheckoutRequestID" in response:
+            transaction.checkout_request_id = response["CheckoutRequestID"]
+            transaction.save()
+
+        if response.get('ResponseCode') == '0':
+            messages.success(request, 'STK Push sent! Check your phone.')
+        else:
+            messages.error(request, f"Error: {response.get('errorMessage')}")
+
+    return render(request, 'consultations/book_and_pay.html', {"booking": booking})
 
 
-@login_required(login_url='login')
-def ask_question(request):
-    """Post a new question"""
-    try:
-        farmer_profile = FarmerProfile.objects.get(user=request.user)
-    except FarmerProfile.DoesNotExist:
-        messages.error(request, 'Please complete your profile first.')
-        return redirect('home')
-    
+
+@login_required
+def mpesa_payment(request, consultation_id):
+    # Use booking instead of consultation
+    booking = ConsultationBooking.objects.get(id=consultation_id)
+
     if request.method == 'POST':
-        form = QuestionForm(request.POST)
-        if form.is_valid():
-            question = form.save(commit=False)
-            question.author = farmer_profile
-            question.save()
-            messages.success(request, 'Question posted! Experts will answer soon.')
-            return redirect('question_detail', pk=question.pk)
-    else:
-        form = QuestionForm()
-    
-    context = {'form': form}
-    return render(request, 'consultations/ask_question.html', context)
+        phone = request.POST.get('phone')
+        amount = booking.amount  # get amount from booking
+
+        # 1. Create a payment record BEFORE sending STK
+        transaction = PaymentTransaction.objects.create(
+            consultation=booking,  #  use booking
+            phone_number=phone,
+            amount=amount,
+            status='pending'
+        )
+
+        # 2. Trigger STK
+        response = lipa_na_mpesa(phone, amount)
+
+        # 3. Save CheckoutRequestID to map callback to this record
+        if "CheckoutRequestID" in response:
+            transaction.checkout_request_id = response["CheckoutRequestID"]
+            transaction.save()
+
+        if response.get('ResponseCode') == '0':
+            messages.success(request, 'STK Push sent! Check your phone to complete payment.')
+        else:
+            messages.error(request, f"Error: {response.get('errorMessage')}")
+
+    return render(request, 'consultations/mpesa.html', {"booking": booking})  # ✅ pass booking
 
 
-@login_required(login_url='login')
-def question_detail(request, pk):
-    """View question and answers"""
-    question = get_object_or_404(Question, pk=pk)
-    question.views += 1
-    question.save()
+
+def get_access_token():
+    url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
+    response = requests.get(url, auth=HTTPBasicAuth(settings.MPESA_CONSUMER_KEY, settings.MPESA_CONSUMER_SECRET))
+    token = response.json().get('access_token')
+    return token
+
+def lipa_na_mpesa(phone_number, amount):
+    access_token = get_access_token()  # make sure this function uses MPESA_CONSUMER_KEY & SECRET
+    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
     
-    try:
-        farmer_profile = FarmerProfile.objects.get(user=request.user)
-    except FarmerProfile.DoesNotExist:
-        farmer_profile = None
-    
-    # Check if user is an expert
-    try:
-        expert_profile = Expert.objects.get(user=request.user)
-    except Expert.DoesNotExist:
-        expert_profile = None
-    
-    if request.method == 'POST' and expert_profile:
-        form = AnswerForm(request.POST)
-        if form.is_valid():
-            answer = form.save(commit=False)
-            answer.question = question
-            answer.author = expert_profile
-            answer.save()
-            messages.success(request, 'Your answer has been posted!')
-            return redirect('question_detail', pk=pk)
-    else:
-        form = AnswerForm() if expert_profile else None
-    
-    context = {
-        'question': question,
-        'answers': question.answers.all(),
-        'form': form,
-        'farmer_profile': farmer_profile,
-        'expert_profile': expert_profile,
+    password_str = settings.MPESA_EXPRESS_SHORTCODE + settings.MPESA_PASSKEY + timestamp
+    password = base64.b64encode(password_str.encode()).decode('utf-8')
+
+    stk_url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+    headers = {"Authorization": f"Bearer {access_token}"}
+
+    payload = {
+        "BusinessShortCode": settings.MPESA_EXPRESS_SHORTCODE,
+        "Password": password,
+        "Timestamp": timestamp,
+        "TransactionType": "CustomerPayBillOnline",
+        "Amount": amount,
+        "PartyA": phone_number,
+        "PartyB": settings.MPESA_EXPRESS_SHORTCODE,
+        "PhoneNumber": phone_number,
+        "CallBackURL": settings.MPESA_CALLBACK_URL,
+        "AccountReference": "Consultation",
+        "TransactionDesc": "Consultation Payment"
     }
-    
-    return render(request, 'consultations/question_detail.html', context)
+
+    response = requests.post(stk_url, json=payload, headers=headers)
+    return response.json()
 
 
-
-# Consultation Booking Views
-@login_required(login_url='login')
-def book_consultation(request, expert_id=None):
-    """Book a consultation with expert"""
-    try:
-        farmer_profile = FarmerProfile.objects.get(user=request.user)
-    except FarmerProfile.DoesNotExist:
-        messages.error(request, 'Please complete your profile first.')
-        return redirect('home')
-    
-    expert = None
-    if expert_id:
-        expert = get_object_or_404(Expert, id=expert_id)
-    
-    if request.method == 'POST':
-        form = ConsultationForm(request.POST)
-        if form.is_valid():
-            consultation = form.save(commit=False)
-            consultation.farmer = farmer_profile
-            consultation.expert = expert if expert else form.cleaned_data.get('expert')
-            consultation.amount = consultation.calculate_amount()
-            consultation.save()
-            
-            messages.success(request, 'Consultation booked! Proceeding to payment...')
-            return redirect('initiate_payment', consultation_id=consultation.id)
-    else:
-        form = ConsultationForm()
-    
-    context = {
-        'form': form,
-        'expert': expert,
-    }
-    
-    return render(request, 'consultations/book_consultation.html', context)
-
-
-@login_required(login_url='login')
-def initiate_payment(request, consultation_id):
-    """Initiate M-Pesa STK Push payment"""
-    consultation = get_object_or_404(Consultation, id=consultation_id)
-    
-    # Verify consultation belongs to logged-in user
-    if consultation.farmer.user != request.user:
-        messages.error(request, 'Unauthorized access')
-        return redirect('qa_forum')
-    
-    # Don't allow re-payment if already completed
-    if consultation.payment_status == 'completed':
-        messages.warning(request, 'This consultation has already been paid for.')
-        return redirect('consultation_detail', pk=consultation_id)
-    
-    if request.method == 'POST':
-        phone_number = request.POST.get('phone_number')
-        
-        if not phone_number:
-            messages.error(request, 'Please enter your phone number')
-            return redirect('initiate_payment', consultation_id=consultation_id)
-        
-        try:
-            # Initialize M-Pesa service
-            mpesa = DarajaMpesaService()
-            
-            # Build callback URL
-            callback_url = request.build_absolute_uri(reverse('mpesa_callback'))
-            
-            # Initiate STK Push
-            result = mpesa.initiate_stk_push(
-                phone_number=phone_number,
-                amount=consultation.amount,
-                consultation_id=consultation.id,
-                description=f"{consultation.topic}",
-                callback_url=callback_url
-            )
-            
-            if result['success']:
-                # Create/Update payment transaction record
-                payment, created = PaymentTransaction.objects.get_or_create(
-                    consultation=consultation,
-                    defaults={
-                        'phone_number': phone_number,
-                        'amount': consultation.amount,
-                        'transaction_id': result.get('checkout_request_id', ''),
-                        'status': 'pending'
-                    }
-                )
-                
-                # Update consultation with transaction info
-                consultation.mpesa_transaction_id = result.get('checkout_request_id', '')
-                consultation.payment_status = 'pending'
-                consultation.save()
-                
-                messages.success(request, 'STK Push sent! Check your phone to enter your M-Pesa PIN.')
-                logger.info(f"STK Push initiated for consultation {consultation_id}")
-                
-                return render(request, 'consultations/payment_waiting.html', {
-                    'consultation': consultation,
-                    'checkout_request_id': result.get('checkout_request_id'),
-                    'merchant_request_id': result.get('merchant_request_id')
-                })
-            else:
-                messages.error(request, f"Payment initiation failed: {result.get('error')}")
-                logger.error(f"STK Push failed for consultation {consultation_id}: {result.get('error')}")
-                return redirect('initiate_payment', consultation_id=consultation_id)
-        
-        except Exception as e:
-            messages.error(request, f"An error occurred: {str(e)}")
-            logger.error(f"Exception in initiate_payment: {str(e)}")
-            return redirect('initiate_payment', consultation_id=consultation_id)
-    
-    context = {'consultation': consultation}
-    return render(request, 'consultations/initiate_payment.html', context)
-
-
-
-# M-Pesa Callback Views
 @csrf_exempt
-@require_http_methods(["POST"])
 def mpesa_callback(request):
-    """
-    Handle M-Pesa payment callback
-    This endpoint receives payment status from Safaricom
-    """
-    try:
-        # Parse callback data
-        data = json.loads(request.body)
-        logger.info(f"M-Pesa Callback received: {data}")
-        
-        body = data.get('Body', {})
-        stk_callback = body.get('stkCallback', {})
-        
-        checkout_request_id = stk_callback.get('CheckoutRequestID')
-        result_code = stk_callback.get('ResultCode')
-        result_desc = stk_callback.get('ResultDesc')
-        
-        # Find consultation and payment by checkout request ID
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+
+        callback = data['Body']['stkCallback']
+        checkout_request_id = callback['CheckoutRequestID']
+        result_code = callback['ResultCode']
+
+        # Find the matching transaction
         try:
-            payment = PaymentTransaction.objects.get(transaction_id=checkout_request_id)
-            consultation = payment.consultation
+            transaction = PaymentTransaction.objects.get(
+                checkout_request_id=checkout_request_id
+            )
         except PaymentTransaction.DoesNotExist:
-            logger.warning(f"Payment not found for checkout_request_id: {checkout_request_id}")
-            return JsonResponse({'ResultCode': 0, 'ResultDesc': 'OK'})
-        
-        # Update payment status based on result code
-        if result_code == 0:  # Success
-            payment.status = 'completed'
-            consultation.payment_status = 'completed'
-            
-            # Extract receipt number if available
-            callback_metadata = stk_callback.get('CallbackMetadata', {})
-            items = callback_metadata.get('Item', [])
-            for item in items:
-                if item.get('Name') == 'MpesaReceiptNumber':
-                    payment.receipt_number = item.get('Value')
-                    consultation.mpesa_receipt_number = item.get('Value')
-            
-            logger.info(f"Payment {checkout_request_id} completed successfully")
-            messages.success = "Payment successful! Your consultation has been confirmed."
-        
-        else:  # Failed
-            payment.status = 'failed'
-            consultation.payment_status = 'failed'
-            logger.warning(f"Payment {checkout_request_id} failed: {result_desc}")
-        
-        payment.save()
-        consultation.save()
-        
-        return JsonResponse({'ResultCode': 0, 'ResultDesc': 'OK'})
-    
-    except Exception as e:
-        logger.error(f"Error processing M-Pesa callback: {str(e)}")
-        return JsonResponse({'ResultCode': 1, 'ResultDesc': 'Error'}, status=500)
+            return HttpResponse("Transaction not found", status=404)
 
+        if result_code == 0:
+            # Paid successfully
+            items = callback["CallbackMetadata"]["Item"]
+            amount = items[0]["Value"]
+            receipt = items[1]["Value"]
 
-@login_required(login_url='login')
-def check_payment_status(request, consultation_id):
-    """
-    Check payment status via AJAX
-    Returns payment status for the consultation
-    """
-    try:
-        consultation = get_object_or_404(Consultation, id=consultation_id)
-        
-        # Verify ownership
-        if consultation.farmer.user != request.user:
-            return JsonResponse({'error': 'Unauthorized'}, status=403)
-        
-        # If payment is completed, redirect to consultation detail
-        payment_status = consultation.payment_status
-        
-        return JsonResponse({
-            'success': True,
-            'payment_status': payment_status,
-            'amount': str(consultation.amount),
-            'receipt_number': consultation.mpesa_receipt_number or '',
-            'consultation_id': consultation.id
-        })
-    
-    except Exception as e:
-        logger.error(f"Error checking payment status: {str(e)}")
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+            transaction.status = "success"
+            transaction.mpesa_receipt = receipt
+            transaction.amount = amount
+            transaction.save()
 
+            # Mark consultation as paid
+            booking = transaction.consultation   # <-- this is ConsultationBooking
+            booking.is_paid = True
+            booking.mpesa_receipt = receipt
+            booking.save()
 
+        else:
+            transaction.status = "failed"
+            transaction.save()
 
-# Consultation Management Views
-@login_required(login_url='login')
-def my_consultations(request):
-    """View user's consultations"""
-    try:
-        farmer_profile = FarmerProfile.objects.get(user=request.user)
-    except FarmerProfile.DoesNotExist:
-        messages.error(request, 'Please complete your profile first.')
-        return redirect('home')
-    
-    consultations = Consultation.objects.filter(farmer=farmer_profile).order_by('-created_at')
-    
-    context = {'consultations': consultations}
-    return render(request, 'consultations/my_consultations.html', context)
+        return HttpResponse("OK", status=200)
 
+    return HttpResponse("Invalid request", status=400)
 
-@login_required(login_url='login')
-def consultation_detail(request, pk):
-    """View consultation details"""
-    consultation = get_object_or_404(Consultation, pk=pk)
-    
-    # Check ownership
-    if consultation.farmer.user != request.user:
-        messages.error(request, 'Unauthorized access')
-        return redirect('qa_forum')
-    
-    context = {'consultation': consultation}
-    return render(request, 'consultations/consultation_detail.html', context)
+def notify_user(consultation):
+    send_mail(
+        subject='Your Consultation is Answered',
+        message=f'Your question: {consultation.question}\nAnswer: {consultation.answer}',
+        from_email='no-reply@example.com',
+        recipient_list=[consultation.user.email],
+        fail_silently=True,
+    )

@@ -1,0 +1,127 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Month Navigation -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-success">&lt; Previous</a>
+        <h2>{{ month_name }} {{ year }}</h2>
+        <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-success">Next &gt;</a>
+    </div>
+
+    <!-- Weekday Headers -->
+    <div class="calendar-grid">
+        <div class="day-header">Sun</div>
+        <div class="day-header">Mon</div>
+        <div class="day-header">Tue</div>
+        <div class="day-header">Wed</div>
+        <div class="day-header">Thu</div>
+        <div class="day-header">Fri</div>
+        <div class="day-header">Sat</div>
+
+        <!-- Calendar Days -->
+        {% for week in weeks %}
+            {% for day in week %}
+                {% if day == 0 %}
+                    <div class="day-card empty"></div>
+                {% else %}
+                    <div class="day-card">
+                        <div class="day-number">{{ day }}</div>
+
+                        <!-- Display tasks for this day -->
+                        {% for task in tasks %}
+                            {% if task.date.day == day and task.date.month == month and task.date.year == year %}
+                                <div class="task {{ task.task_type }}">
+                                    <span>{{ task.title }}</span>
+                                    <a href="{% url 'delete_task' task.id %}" class="text-danger">x</a>
+                                </div>
+
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'add_task' %}" class="btn btn-success">Add Farm Task</a>
+    </div>
+
+    <!--Upcoming Tasks-->
+    <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card p-3 shadow-sm">
+                <h5 class="mb-3">Upcoming Tasks</h5>
+
+                {% for task in upcoming_tasks %}
+                    <div class="task {{ task.task_type }} mb-2">
+                        {{ task.title }} – {{ task.date }}
+                    </div>
+                {% empty %}
+                    <p class="text-muted">No upcoming tasks.</p>
+                {% endfor %}
+            </div>
+        </div>
+</div>
+
+<style>
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+.day-header {
+    background-color: #8ee1b6ff;
+    text-align: center;
+    font-weight: bold;
+    padding: 10px 0;
+    border-radius: 5px;
+}
+.day-card {
+    background-color: #e0f7e6ff;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow-y: auto;
+}
+.day-card.empty {
+    background-color: transparent;
+    box-shadow: none;
+}
+.day-number {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.task {
+    font-size: 13px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    color: black;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.task a {
+    text-decoration: none;
+
+}
+.task.planting { background-color: #ed9db5ff; }     
+.task.watering { background-color: #ecdf53ff }     
+.task.fertilizing { background-color: #f7a460ff; }  
+.task.harvesting { background-color: #c48de6ff; }   
+@media (max-width: 768px) {
+    .day-card {
+        min-height: 80px;
+        font-size: 12px;
+    }
+}
+</style>
+{% endblock %}

@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "agriapp",
-    "weather_calendar",
+    "planner",
     "pests",
     "tips",
     "consultations",
@@ -184,6 +184,9 @@ MPESA_INITIATOR_USERNAME = 'initiator_username'
 # Plaintext password for initiator (to be used in B2C, B2B, AccountBalance and TransactionStatusQuery Transactions)
 
 MPESA_INITIATOR_SECURITY_CREDENTIAL = 'initiator_security_credential'
+
+MPESA_CALLBACK_URL = "https://your-ngrok-url.ngrok-free.app/consultations/callback/"
+
 
 #LOGGING 
 LOGGING = {
