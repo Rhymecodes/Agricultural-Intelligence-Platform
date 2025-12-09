@@ -5,10 +5,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import FarmerProfile
+from .models import FarmerProfile,Crop
+from planner.models import FarmTask
+from consultations.models import Question
+from datetime import date, timedelta
 import requests
 from django.conf import settings 
-
 
 
 # Create your views here.
@@ -22,7 +24,44 @@ def home (request):
         'weather': weather,
         'farming_tip': farming_tip,
         'location': location,
+        'active_crops': 0,
+        'upcoming_tasks': 0,
+        'weather_alerts': 0,
+        'weekly_forecast': []
     }
+
+    # If user is authenticated, get real data
+    if request.user.is_authenticated:
+        try:
+            farmer_profile = FarmerProfile.objects.get(user=request.user)
+            
+            # Get active crops count
+            today = date.today()
+            active_crops = Crop.objects.filter(
+                planting_month__lte=today.month,
+                harvest_month__gte=today.month
+            ).count()
+            context['active_crops'] = active_crops
+            
+            # Get upcoming tasks count (from today onwards)
+            upcoming_tasks = FarmTask.objects.filter(
+                user=request.user,
+                date__gte=today
+            ).count()
+            context['upcoming_tasks'] = upcoming_tasks
+            
+        except FarmerProfile.DoesNotExist:
+            pass
+    
+    # Get weather alerts based on conditions
+    if weather:
+        alerts = get_weather_alerts(weather)
+        context['weather_alerts'] = len(alerts)
+        context['alerts_list'] = alerts
+    
+    # Get weekly forecast
+    weekly_forecast = get_weekly_forecast(location)
+    context['weekly_forecast'] = weekly_forecast
     return render(request, 'home.html', context)
 
 #Login User
@@ -187,6 +226,129 @@ def get_weather(location):
     except Exception as e:
         print(f"Weather API error: {e}")
         return None
+
+def get_weekly_forecast(location):
+    """Get 7-day weather forecast"""
+    try:
+        coordinates = {
+            'Mombasa': {'lat': -4.0435, 'lon': 39.6682},
+            'Nairobi': {'lat': -1.2921, 'lon': 36.8219},
+            # Add all other locations as needed (same as above)
+        }
+        
+        if location not in coordinates:
+            # Try to find partial match
+            for key in coordinates:
+                if location.lower() in key.lower():
+                    location = key
+                    break
+        
+        if location in coordinates:
+            coords = coordinates[location]
+            api_key = settings.WEATHER_API_KEY
+            
+            url = f"https://api.openweathermap.org/data/2.5/forecast"
+            params = {
+                "lat": coords['lat'],
+                "lon": coords['lon'],
+                "appid": api_key,
+                "units": "metric",
+                "cnt": 40  # 5 days of 3-hourly data
+            }
+            
+            response = requests.get(url, params=params)
+            data = response.json()
+            
+            # Process forecast data to get daily forecast
+            forecast_dict = {}
+            for item in data['list']:
+                date_str = item['dt_txt'].split()[0]
+                
+                if date_str not in forecast_dict:
+                    forecast_dict[date_str] = {
+                        'date': date_str,
+                        'temp_max': item['main']['temp_max'],
+                        'temp_min': item['main']['temp_min'],
+                        'weather': item['weather'][0]['main'],
+                        'description': item['weather'][0]['description'],
+                        'rainfall': item.get('rain', {}).get('3h', 0),
+                    }
+                else:
+                    # Keep max/min
+                    forecast_dict[date_str]['temp_max'] = max(
+                        forecast_dict[date_str]['temp_max'],
+                        item['main']['temp_max']
+                    )
+                    forecast_dict[date_str]['temp_min'] = min(
+                        forecast_dict[date_str]['temp_min'],
+                        item['main']['temp_min']
+                    )
+            
+            # Return sorted forecast (next 7 days)
+            return sorted(list(forecast_dict.values()), key=lambda x: x['date'])[:7]
+    
+    except Exception as e:
+        print(f"Weekly forecast error: {e}")
+        return []
+
+
+def get_weather_alerts(weather):
+    """Generate alerts based on weather conditions"""
+    alerts = []
+    
+    if not weather:
+        return alerts
+    
+    temp = weather.get('temperature', 0)
+    humidity = weather.get('humidity', 0)
+    rainfall = weather.get('rainfall', 0)
+    weather_type = weather.get('weather', '').lower()
+    
+    # Temperature alerts
+    if temp > 35:
+        alerts.append({
+            'type': 'danger',
+            'icon': '🌡️',
+            'message': f'Extreme heat alert! Temperature is {temp}°C. Increase irrigation.'
+        })
+    elif temp > 30:
+        alerts.append({
+            'type': 'warning',
+            'icon': '☀️',
+            'message': f'Hot weather ({temp}°C). Monitor crops for heat stress.'
+        })
+    
+    if temp < 5:
+        alerts.append({
+            'type': 'danger',
+            'icon': '❄️',
+            'message': f'Frost risk! Temperature is {temp}°C. Protect sensitive crops.'
+        })
+    
+    # Rainfall alerts
+    if 'rain' in weather_type or rainfall > 5:
+        alerts.append({
+            'type': 'info',
+            'icon': '🌧️',
+            'message': f'Heavy rainfall expected ({rainfall}mm). Watch for waterlogging.'
+        })
+    
+    # Humidity alerts
+    if humidity > 85:
+        alerts.append({
+            'type': 'warning',
+            'icon': '💧',
+            'message': f'Very high humidity ({humidity}%). Risk of fungal diseases.'
+        })
+    
+    if humidity < 30:
+        alerts.append({
+            'type': 'warning',
+            'icon': '💨',
+            'message': f'Low humidity ({humidity}%). Increase watering frequency.'
+        })
+    
+    return alerts
 
 def get_farming_tip_by_weather(weather):
     """Get farming tip based on actual weather conditions"""

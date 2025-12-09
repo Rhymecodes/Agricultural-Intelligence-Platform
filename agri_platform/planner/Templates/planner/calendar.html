@@ -49,17 +49,41 @@
     </div>
 
     <!--Upcoming Tasks-->
-    <div class="col-lg-4 mt-4 mt-lg-0">
-            <div class="card p-3 shadow-sm">
-                <h5 class="mb-3">Upcoming Tasks</h5>
+    <div class="col-lg-4">
+            <div class="card p-4 shadow-sm" style="border-radius: 15px; height: fit-content;">
+                <h5 class="mb-4 fw-bold text-success">
+                    <i class="fas fa-tasks"></i> Upcoming Tasks
+                </h5>
 
-                {% for task in upcoming_tasks %}
-                    <div class="task {{ task.task_type }} mb-2">
-                        {{ task.title }} – {{ task.date }}
+                {% if upcoming_tasks %}
+                    {% for task in upcoming_tasks %}
+                        <div class="upcoming-task mb-3 p-3 rounded" style="background-color: #f8f9fa; border-left: 4px solid;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1 fw-bold">{{ task.title }}</h6>
+                                    <small class="text-muted">
+                                         {{ task.date|date:"M d, Y" }}
+                                    </small>
+                                    <br>
+                                    <small class="badge mt-2" style="background-color: 
+                                        {% if task.task_type == 'planting' %}#ed9db5
+                                        {% elif task.task_type == 'watering' %}#ecdf53
+                                        {% elif task.task_type == 'fertilizing' %}#f7a460
+                                        {% elif task.task_type == 'harvesting' %}#c48de6
+                                        {% endif %}
+                                        ">
+                                        {{ task.get_task_type_display }}
+                                    </small>
+                                </div>
+                                <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-danger">Delete</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <p class="mb-0"> No upcoming tasks</p>
                     </div>
-                {% empty %}
-                    <p class="text-muted">No upcoming tasks.</p>
-                {% endfor %}
+                {% endif %}
             </div>
         </div>
 </div>

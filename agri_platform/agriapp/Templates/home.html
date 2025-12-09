@@ -29,7 +29,7 @@
         <div class="card-body p-4">
             <!-- Location Selector -->
             <div class="mb-4 d-flex align-items-center gap-3">
-                <span class="text-success fs-5"></span>
+                <span class="text-success fs-5">📍</span>
                 <label for="location" class="form-label mb-0 text-success fw-bold">What's Your Location?</label>
                 <select id="location" class="form-select w-auto border-2 border-success" 
                         style="max-width: 300px; max-height: 200px; overflow-y: auto;" 
@@ -86,7 +86,7 @@
 
             <hr>
 
-            <!-- Weather Card Inside -->
+            <!-- Current Weather Card -->
             {% if weather %}
             <h5 class="text-success mb-4" style="font-size: 1.8rem; font-weight: 600;">Weather Forecast for {{ location }}</h5>
 
@@ -118,9 +118,40 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Weekly Forecast -->
+                {% if weekly_forecast %}
+                <h6 class="text-success mb-3" style="font-weight: 600;">7-Day Forecast</h6>
+                <div class="row g-2 mb-4">
+                    {% for day in weekly_forecast %}
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <div class="card border-0 shadow-sm p-3" style="border-radius: 10px; background: #e8f5e9; text-align: center;">
+                                <small class="text-muted fw-bold">{{ day.date }}</small>
+                                <p class="mb-1" style="font-size: 1.2rem; font-weight: 600; color: #27ae60;">
+                                    {{ day.temp_max|floatformat:0 }}°
+                                </p>
+                                <small class="text-muted">{{ day.temp_min|floatformat:0 }}° / {{ day.weather }}</small>
+                                {% if day.rainfall > 0 %}
+                                    <small class="text-info d-block mt-1">💧 {{ day.rainfall }}mm</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             {% endif %}
 
-            <!-- Farming Tip Card Inside -->
+            <!-- Weather Alerts -->
+            {% if alerts_list %}
+            <h6 class="text-success mb-3" style="font-weight: 600;">⚠️ Weather Alerts</h6>
+            {% for alert in alerts_list %}
+                <div class="alert alert-{{ alert.type }} mb-2" role="alert">
+                    <strong>{{ alert.icon }} {{ alert.message }}</strong>
+                </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Farming Tip Card -->
             <div class="alert alert-warning border-3 border-warning mb-0" role="alert">
                 <div class="d-flex align-items-center gap-3">
                     <span class="fs-2">💡</span>
@@ -134,13 +165,14 @@
     </div>
 
 
-        <!-- Quick Stats Grid -->
+        <!-- Quick Stats Grid (Real Data) -->
         <div class="row g-4 mb-5">
             <div class="col-md-4">
                 <div class="card border-start border-5 border-success shadow-sm h-100">
                     <div class="card-body">
-                        <h6 class="card-title text-success">Active Crops</h6>
-                        <p class="fs-2 text-success fw-bold mb-0">3</p>
+                        <h6 class="card-title text-success">🌾 Active Crops</h6>
+                        <p class="fs-2 text-success fw-bold mb-0">{{ plant_list }}</p>
+                        <small class="text-muted">Crops in season now</small>
                     </div>
                 </div>
             </div>
@@ -148,8 +180,9 @@
             <div class="col-md-4">
                 <div class="card border-start border-5 border-info shadow-sm h-100">
                     <div class="card-body">
-                        <h6 class="card-title text-info">Upcoming Tasks</h6>
-                        <p class="fs-2 text-info fw-bold mb-0">5</p>
+                        <h6 class="card-title text-info">📅 Upcoming Tasks</h6>
+                        <p class="fs-2 text-info fw-bold mb-0">{{ upcoming_tasks }}</p>
+                        <small class="text-muted">Tasks scheduled</small>
                     </div>
                 </div>
             </div>
@@ -157,8 +190,9 @@
             <div class="col-md-4">
                 <div class="card border-start border-5 border-warning shadow-sm h-100">
                     <div class="card-body">
-                        <h6 class="card-title text-warning">Alerts</h6>
-                        <p class="fs-2 text-warning fw-bold mb-0">2</p>
+                        <h6 class="card-title text-warning">🚨 Alerts</h6>
+                        <p class="fs-2 text-warning fw-bold mb-0">{{ weather_alerts }}</p>
+                        <small class="text-muted">Weather alerts active</small>
                     </div>
                 </div>
             </div>
@@ -167,41 +201,41 @@
         <!-- Quick Links -->
         <div class="row g-4">
             <div class="col-md-3">
-                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <div class="fs-1 mb-3">🌤️</div>
-                        <h5 class="card-title">Weather</h5>
-                        <p class="card-text small text-muted">Check forecast</p>
-                    </div>
-                </a>
-            </div>
-            
-            <div class="col-md-3">
-                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                <a href="{% url 'calendar_view' %}" class="card text-decoration-none text-success border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <div class="fs-1 mb-3">📅</div>
                         <h5 class="card-title">Calendar</h5>
-                        <p class="card-text small text-muted">Planting guide</p>
+                        <p class="card-text small text-muted">View & plan tasks</p>
                     </div>
                 </a>
             </div>
             
             <div class="col-md-3">
-                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                <a href="{% url 'plant_list' %}" class="card text-decoration-none text-success border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <div class="fs-1 mb-3">🐛</div>
                         <h5 class="card-title">Pests</h5>
-                        <p class="card-text small text-muted">Pest guide</p>
+                        <p class="card-text small text-muted">Identify & treat</p>
                     </div>
                 </a>
             </div>
             
             <div class="col-md-3">
-                <a href="#" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                <a href="{% url 'tips_list' %}" class="card text-decoration-none text-success border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <div class="fs-1 mb-3">💡</div>
                         <h5 class="card-title">Tips</h5>
-                        <p class="card-text small text-muted">Community tips</p>
+                        <p class="card-text small text-muted">Learn best practices</p>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{% url 'consultations_home' %}" class="card text-decoration-none text-success border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="fs-1 mb-3">💬</div>
+                        <h5 class="card-title">Consultations</h5>
+                        <p class="card-text small text-muted">Ask experts</p>
                     </div>
                 </a>
             </div>
@@ -229,7 +263,7 @@
                         <div class="card text-center shadow-sm p-4 border-0">
                             <div class="fs-1 mb-2">🌤️</div>
                             <h6 class="text-success">Real Weather</h6>
-                            <p class="small text-muted">Up-to-date forecasts</p>
+                            <p class="small text-muted">7-day forecasts</p>
                         </div>
                     </div>
                     <div class="col-6">
@@ -241,16 +275,16 @@
                     </div>
                     <div class="col-6">
                         <div class="card text-center shadow-sm p-4 border-0">
-                            <div class="fs-1 mb-2">🐛</div>
-                            <h6 class="text-success">Pest Guide</h6>
-                            <p class="small text-muted">Identify & treat pests</p>
+                            <div class="fs-1 mb-2">🤖</div>
+                            <h6 class="text-success">AI Pest Detection</h6>
+                            <p class="small text-muted">Identify pests with photos</p>
                         </div>
                     </div>
                     <div class="col-6">
                         <div class="card text-center shadow-sm p-4 border-0">
                             <div class="fs-1 mb-2">💡</div>
-                            <h6 class="text-success">Farm Tips</h6>
-                            <p class="small text-muted">Learn from farmers</p>
+                            <h6 class="text-success">Expert Tips</h6>
+                            <p class="small text-muted">Learn from experts</p>
                         </div>
                     </div>
                 </div>
@@ -269,14 +303,18 @@
     .border-start {
         border-left-width: 5px !important;
     }
+
+    @media (max-width: 768px) {
+        .display-4 {
+            font-size: 2rem;
+        }
+    }
 </style>
 
 <script>
 function updateWeather(location) {
-    // Create URL with location parameter
     const url = new URL(window.location);
     url.searchParams.set('location', location);
-    console.log('Navigating to:', url.toString()); // Debug
     window.location.href = url.toString();
 }
 </script>

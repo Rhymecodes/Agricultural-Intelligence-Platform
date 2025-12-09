@@ -42,11 +42,11 @@ def calendar_view(request):
         next_year += 1
 
     # Get tasks for the current month
-    tasks = FarmTask.objects.filter(date__year=year, date__month=month)
-
+    tasks = FarmTask.objects.filter(user=request.user, date__year=year, date__month=month).order_by('date')
+    
     upcoming_tasks = FarmTask.objects.filter(
-    user=request.user,
-    date__gte=today
+        user=request.user,
+        date__gte=today
     ).order_by('date')[:6]
 
     context = {
@@ -86,6 +86,6 @@ def add_task(request):
 
 # Delete task view
 def delete_task(request, task_id):
-    task = get_object_or_404(FarmTask, id=task_id)
+    task = get_object_or_404(FarmTask, id=task_id, user=request.user)
     task.delete()
     return redirect('calendar_view')
