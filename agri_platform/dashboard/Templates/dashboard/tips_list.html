@@ -1,0 +1,22 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<h3>Tips <small class="text-muted">from tips app</small></h3>
+<table class="table table-sm">
+  <thead><tr><th>Title</th><th>Author</th><th>Likes</th><th>Created</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for t in tips %}
+      <tr>
+        <td>{{ t.title }}</td>
+        <td>{{ t.author.user.username }}</td>
+        <td>{{ t.likes }}</td>
+        <td>{{ t.created_at }}</td>
+        <td>
+          <a class="btn btn-sm btn-danger" href="{% url 'dashboard:tip_delete' t.id %}">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No tips yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

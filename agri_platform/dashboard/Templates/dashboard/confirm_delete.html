@@ -1,0 +1,8 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+  <h4>Are you sure you want to delete?</h4>
+  <form method="post">{% csrf_token %}
+    <button class="btn btn-danger">Yes, delete</button>
+    <a class="btn btn-secondary" href="javascript:history.back()">Cancel</a>
+  </form>
+{% endblock %}

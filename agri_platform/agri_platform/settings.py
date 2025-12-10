@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "tips",
     "consultations",
     "django_daraja",
+    "dashboard",
+    
 ]
 
 MIDDLEWARE = [

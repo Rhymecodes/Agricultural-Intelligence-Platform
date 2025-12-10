@@ -1,0 +1,24 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<h3>Farmers <a class="btn btn-sm btn-primary float-end" href="{% url 'dashboard:farmer_add' %}">Add</a></h3>
+<table class="table table-striped">
+  <thead><tr><th>ID</th><th>User</th><th>Phone</th><th>Location</th><th>Farm size</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for f in farmers %}
+      <tr>
+        <td>{{ f.id }}</td>
+        <td>{{ f.user.username }}</td>
+        <td>{{ f.phone }}</td>
+        <td>{{ f.location }}</td>
+        <td>{{ f.farm_size }}</td>
+        <td>
+          <a class="btn btn-sm btn-secondary" href="{% url 'dashboard:farmer_edit' f.id %}">Edit</a>
+          <a class="btn btn-sm btn-danger" href="{% url 'dashboard:farmer_delete' f.id %}">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">No farmers yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<h2>Overview</h2>
+<div class="row g-3">
+  <div class="col-md-3"><div class="card-box text-center"><h3>{{ farmers_count }}</h3><p>Farmers</p></div></div>
+  <div class="col-md-3"><div class="card-box text-center"><h3>{{ plants_count }}</h3><p>Plants</p></div></div>
+  <div class="col-md-3"><div class="card-box text-center"><h3>{{ pests_count }}</h3><p>Pests</p></div></div>
+  <div class="col-md-3"><div class="card-box text-center"><h3>{{ consultations_count }}</h3><p>Consultations</p></div></div>
+</div>
+
+<div class="row mt-4 g-3">
+  <div class="col-md-4"><div class="card-box"><h5>Payments</h5><p>Pending: <strong>{{ pending_payments_count }}</strong></p><p>Pending TXs: <strong>{{ payment_txs_pending }}</strong></p><p>Total revenue: <strong>KES {{ total_revenue }}</strong></p></div></div>
+
+  <div class="col-md-4"><div class="card-box"><h5>Tips</h5><p>Community Tips: <strong>{{ community_tips_count }}</strong></p><p>Tips (tips app): <strong>{{ tips_count }}</strong></p></div></div>
+
+</div>
+{% endblock %}

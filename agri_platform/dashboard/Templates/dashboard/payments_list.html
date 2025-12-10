@@ -1,0 +1,22 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<h3>Payment Transactions</h3>
+<p>Total revenue (success): <strong>KES {{ total_revenue }}</strong></p>
+<table class="table table-sm">
+  <thead><tr><th>ID</th><th>Consultation</th><th>Phone</th><th>Amount</th><th>Status</th><th>Created</th></tr></thead>
+  <tbody>
+    {% for tx in txs %}
+      <tr>
+        <td>{{ tx.id }}</td>
+        <td>{% if tx.consultation %}#{{ tx.consultation.id }}{% else %}-{% endif %}</td>
+        <td>{{ tx.phone_number }}</td>
+        <td>{{ tx.amount }}</td>
+        <td>{{ tx.status }}</td>
+        <td>{{ tx.created_at }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">No transactions.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

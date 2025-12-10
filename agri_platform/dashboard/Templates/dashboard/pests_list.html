@@ -1,0 +1,21 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<h3>Pests <a class="btn btn-sm btn-primary float-end" href="{% url 'dashboard:pest_add' %}">Add</a></h3>
+<table class="table table-sm">
+  <thead><tr><th>Name</th><th>Symptoms</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for p in pests %}
+      <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ p.symptoms|truncatechars:80 }}</td>
+        <td>
+          <a class="btn btn-sm btn-secondary" href="{% url 'dashboard:pest_edit' p.id %}">Edit</a>
+          <a class="btn btn-sm btn-danger" href="{% url 'dashboard:pest_delete' p.id %}">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3">No pests yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
